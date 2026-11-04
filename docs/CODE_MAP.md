@@ -493,6 +493,7 @@ C++ 코어는 INetBackend/ITransport/IBackplane에 의존하고 각 구현을 �
 
 ### CMakeLists.txt / Helix.Engine/CMakeLists.txt
 - C++ 엔진·MMO·샘플·CTest를 구성한다. 루트 CMake는 기존 프리셋 진입점으로 cpp를 호출한다.
+- `cmake/HelixIdeFolders.cmake`는 루트·독립 C++ 솔루션에 엔진/모듈/샘플/테스트/벤치마크/외부 의존성/CMake 폴더를 지정한다. 타깃의 FOLDER 표시 속성만 설정하며 imported·alias 타깃은 순회에서 제외한다.
 - HELIX_BUILD_CAPI가 ON일 때만 C ABI 공유 라이브러리를 생성한다. public include는 include/이며 src/와 KCP include는 PRIVATE다.
 
 ### Helix.Mmo/include/helix/mmo/types.h

@@ -27,6 +27,8 @@ ctest --test-dir build/windows-x64 -C Release --output-on-failure
 
 Debug는 `windows-debug` 빌드 프리셋과 `ctest -C Debug`를 사용한다. 서버 출력은 `build/windows-x64/<구성>/`에 생성된다.
 
+Visual Studio에서는 `build/windows-x64/helix-engine.sln`을 연다. 프로젝트는 `01 Engine`, `02 Modules`, `03 Samples`, `04 Tests`, `05 Benchmarks`, `90 Dependencies`, `99 CMake` 폴더로 나뉜다. 선택한 빌드 옵션에 해당하는 타깃이 있는 폴더만 생성한다. 외부 라이브러리는 Dependencies 아래에 묶이며, CMake로 재생성해도 분류가 유지된다. 이 분류는 타깃 표시만 바꾸며 빌드·링크 관계는 유지한다.
+
 C++만 별도 디렉터리에서 구성할 때:
 
 ```powershell
