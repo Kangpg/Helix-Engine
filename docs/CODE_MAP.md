@@ -3,6 +3,8 @@
 
 ## 개요 (레이어 한눈에)
 
+Helix.Engine은 연결·세션·프레이밍·송수신을 담당하는 범용 네트워크 서버 엔진이다. 앱이 메시지 형식과 처리 로직을 정의한다. Helix.Mmo와 이 저장소의 Helix.Protocol은 콘텐츠·메시지 조립 예제로, 엔진 코어와 분리되어 있다. 병렬 월드도 선택 콘텐츠 실험에 해당한다.
+
 관리 프로젝트 공통 target은 `csharp/Directory.Build.props`의 net10.0이고 루트 global.json이 stable .NET 10 SDK를 선택한다. 기존 net8 이력과 현재 실행을 혼동하지 않는다. 관리 NuGet은 0.4.0이며 이전 0.3.0과 .NET 10 전환 검증은 Phase 이력으로 보존한다.
 
 현재 C++와 C#은 독립 엔진이다. C++ 공개 SDK는 ServerCore로 연결되며 선택 C ABI가 SDK를 감싼다. 순수 C# HelixServer는 IServerTransport에 의존하며 기본 TcpServerTransport가 async sockets/Channels를 조립한다. 두 언어의 Helix.Mmo는 네트워크에 의존하지 않고 인스턴스별 이동·전투·AOI 구현을 주입받는다. 아래 native 상세는 C++ 경로에 적용하며 C# P/Invoke 설명은 현재 경로가 아니다.
@@ -598,4 +600,4 @@ C++ 코어는 INetBackend/ITransport/IBackplane에 의존하고 각 구현을 �
 - `csharp/benchmarks/Helix.WireBenchmarks`: 운영 registry/serializer 호출, DTO/입력 setup 및 round-trip, 메모리 내 TCP prefix wrapper, BDN EncodeFramed/DecodeValidated·MemoryDiagnoser. 정상 solution/패키지와 독립.
 - `cpp/benchmarks/wire_serialization.cpp`: 같은 message 값과 실제 adapter + src/proto FrameCodec 헤더, 시간은 hook 없는 executable. `CountNew.cpp`는 별도 allocation probe만 링크하며 new 요청 bytes/calls를 집계.
 - `tools/wire_native_benchmark.py`: 3회 순차 실행/포맷 순서 교대 및 타이밍·할당 CSV/metadata JSON 보존. `tools/wire_benchmark_report.py`: 54개 C# 조건/36개 native 조건·할당 안정성 검사 후 실제 수치·tradeoff 보고서 생성.
-- 이 경로는 이전 bare-state benchmark와 별개다. 로컬 측정 결과는 README의 재현 명령으로 `out/wire-report.md`에 생성하며 Git에는 포함하지 않는다. socket/프레임 수신 버퍼·tick은 제외하며 서로 다른 언어의 allocation 지표를 합치지 않는다.
+- 이 경로는 이전 bare-state benchmark와 별개다. [성능 측정 가이드](BENCHMARKS.md)의 재현 명령으로 `out/wire-report.md`에 생성하며 Git에는 포함하지 않는다. socket/프레임 수신 버퍼·tick은 제외하며 서로 다른 언어의 allocation 지표를 합치지 않는다.

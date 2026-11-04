@@ -1,6 +1,8 @@
-# C++ 작업 그래프 기반 MMO 실험
+# 선택 실험: C++ 작업 그래프 병렬 월드
 
 > 갱신: 2026-11-04 · C++ 선택 모듈. C#은 별도 구현·계획·검증을 유지한다. 측정일은 2026-11-03이다.
+
+범용 네트워크 엔진에 붙이는 콘텐츠 처리 실험이다. 이 문서의 tick·전투·AOI 규칙은 해당 예제 월드에 적용한다. 엔진을 사용하는 앱은 자체 콘텐츠와 처리 구조를 구성한다.
 
 ## 목적과 실행
 
@@ -90,7 +92,7 @@ python tools/verify_parallel_world.py --backend iocp_rio
 python tools/parallel_world_benchmark.py
 ```
 
-Python 통신 도구는 기존 `build/protobuf-python` runtime과 일치하는 protoc가 필요하다. [기존 퀵스타트](../README.md)의 준비 절차를 따른다. `verify_parallel_world.py`는 자체 localhost 프로세스만 생성/종료한다. Windows terminate 정리는 graceful shutdown 증거가 아니다.
+Python 통신 도구는 기존 `build/protobuf-python` runtime과 일치하는 protoc가 필요하다. [빌드 가이드](BUILD.md)의 Python 준비 절차를 따른다. `verify_parallel_world.py`는 자체 localhost 프로세스만 생성/종료한다. Windows terminate 정리는 graceful shutdown 증거가 아니다.
 
 `parallel-world` CTest는 worker 1/2/4/8의 동일 단계 결과, 같은 월드의 실제 겹치는 정책 실행, 공유 executor의 다중 월드, 동시 snapshot/AOI reader, 교체 시점, 상호 처치, 광역기 예산, 설정 파일/env·잘못된 값, 실패 시 미게시를 확인한다. 공간 질의는 worker끼리의 일치뿐 아니라 독립적인 전체 거리 검사와 대조한다.
 

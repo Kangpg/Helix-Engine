@@ -37,28 +37,6 @@ ctest --test-dir build/cpp -C Release --output-on-failure
 
 기존 코어/오프라인 MMO만 필요하면 새 디렉터리에 `-DHELIX_BUILD_PROTOCOL=OFF -DHELIX_BUILD_PARALLEL_MMO=OFF`를 지정한다. 이미 구성한 디렉터리의 선택 값은 CMake cache에 남으므로 필요한 ON/OFF 값을 명시한다.
 
-## 선택 C++ 병렬 월드
-
-```powershell
-cmake --preset windows-x64 -DHELIX_BUILD_PARALLEL_MMO=ON
-cmake --build --preset windows-release --parallel 8
-ctest --test-dir build/windows-x64 -C Release --output-on-failure
-$env:HELIX_MMO__EXECUTION="parallel"
-./build/windows-x64/Release/helix_world_server.exe config/helix.toml
-# 서버 종료 후
-Remove-Item Env:HELIX_MMO__EXECUTION
-```
-
-프로토콜 없이 도메인만 검증할 수도 있다.
-
-```powershell
-cmake -S cpp -B build/parallel -DHELIX_BUILD_PROTOCOL=OFF -DHELIX_BUILD_PARALLEL_MMO=ON
-cmake --build build/parallel --config Release --parallel 8
-ctest --test-dir build/parallel -C Release --output-on-failure
-```
-
-이 구성에도 Taskflow 복원은 필요하다. 네트워크 샘플 `helix_world_server`는 Protocol ON에서 생성된다. 테스트와 benchmark는 [단계별 규칙과 측정 경계](PARALLEL_MMO.md)를 따른다.
-
 ## Linux C++
 
 ```sh
@@ -77,7 +55,7 @@ dotnet run --project csharp/samples/Helix.Echo -c Release -- config/helix.toml
 dotnet run --project csharp/tests/Helix.Tests -c Release
 ```
 
-`helix.dll`이나 C++ 빌드 출력이 필요하지 않다. C# 테스트는 실행형 테스트 프로젝트다. 선택 직렬화 모듈과 별도 benchmark 명령은 [README](../README.md)를 따른다. C++ 병렬 변경만 검증할 때 이 관리 빌드를 수행할 필요는 없다.
+`helix.dll`이나 C++ 빌드 출력이 필요하지 않다. C# 테스트는 실행형 테스트 프로젝트다. 선택 직렬화 모듈은 [예제 메시지 계약](SERIALIZATION.md), 별도 benchmark 명령은 [성능 측정 가이드](BENCHMARKS.md)를 따른다. C++ 병렬 변경만 검증할 때 이 관리 빌드를 수행할 필요는 없다.
 
 ## 실제 통신과 성능
 
@@ -109,3 +87,25 @@ cmake --install build/cpp --config Release --prefix D:/sdk/helix
 ```
 
 외부 프로젝트에서 `find_package(helix CONFIG REQUIRED)`와 설치된 `helix::helix`·`helix::mmo`·선택 `helix::mmo_parallel`을 사용한다. 소비자 구성에 `-DCMAKE_PREFIX_PATH=D:/sdk/helix`를 전달한다. Protocol ON 설치물은 Protobuf 36.2.0 EXACT CMake 패키지를 찾는다. Protocol OFF SDK로 도메인 소비자를 검증하면 Protobuf 복원이 필요하지 않으며, 병렬 소비자에게 Taskflow 헤더를 노출하지 않는다.
+
+## 선택 C++ 병렬 월드
+
+```powershell
+cmake --preset windows-x64 -DHELIX_BUILD_PARALLEL_MMO=ON
+cmake --build --preset windows-release --parallel 8
+ctest --test-dir build/windows-x64 -C Release --output-on-failure
+$env:HELIX_MMO__EXECUTION="parallel"
+./build/windows-x64/Release/helix_world_server.exe config/helix.toml
+# 서버 종료 후
+Remove-Item Env:HELIX_MMO__EXECUTION
+```
+
+프로토콜 없이 도메인만 검증할 수도 있다.
+
+```powershell
+cmake -S cpp -B build/parallel -DHELIX_BUILD_PROTOCOL=OFF -DHELIX_BUILD_PARALLEL_MMO=ON
+cmake --build build/parallel --config Release --parallel 8
+ctest --test-dir build/parallel -C Release --output-on-failure
+```
+
+이 구성에도 Taskflow 복원은 필요하다. 네트워크 샘플 `helix_world_server`는 Protocol ON에서 생성된다. 테스트와 benchmark는 [단계별 규칙과 측정 경계](PARALLEL_MMO.md)를 따른다.

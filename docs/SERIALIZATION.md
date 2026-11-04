@@ -1,6 +1,6 @@
-# 교체 가능한 MMO 직렬화
+# 예제 메시지의 직렬화
 
-2026-10-12. 기본은 기존 Protobuf wire이며 선택 포맷은 공통 DTO 의미를 유지한다.
+갱신: 2026-11-04. `Helix.Protocol`은 이 저장소의 MMO 예제용 메시지와 직렬화 adapter를 제공한다. 엔진 코어는 프레이밍된 바이트를 전달하며, 앱은 사용할 메시지 형식과 codec을 정한다. 아래 계약은 이 예제 메시지를 사용할 때 적용한다. 기본은 기존 Protobuf wire이며 선택 포맷은 공통 DTO 의미를 유지한다.
 
 | 포맷 | C++ | C# | 적용 경로 |
 |---|---|---|---|
@@ -133,4 +133,4 @@ C++ 생성 파일은 build 안, C# 생성 파일은 adapter의 Generated에 저�
 - 메타데이터/방향/포맷 불일치, 잘린 payload, FlatBuffers verifier, MemoryPack 손상 배열 count·필드 길이, 작은 난수 corpus.
 - 실제 C++ Protobuf/FlatBuffers + C# Protobuf/FlatBuffers/MemoryPack 서버의 이동·전투·AOI·request ID·잘못된 입력 및 기존 Python Protobuf 클라이언트. helper의 자체 서버 강제 종료는 graceful 종료 검증과 구분한다.
 
-위 검증은 Windows 로컬 기능/호환 검증이다. 새 adapter의 Windows Release 시간·크기·할당량은 로컬 생성물 `out/wire-report.md`에서 별도 측정했다. 보고서는 Git에 포함하지 않으며 [README의 헤더·검증 포함 측정 명령](../README.md#적용-codec의-헤더검증-포함-비교)으로 생성한다. Linux·원격 CI·운영 부하·실제 socket 비용은 별도 검증 대상이다.
+위 검증은 Windows 로컬 기능/호환 검증이다. 새 adapter의 Windows Release 시간·크기·할당량은 로컬 생성물 `out/wire-report.md`에서 별도 측정했다. 보고서는 Git에 포함하지 않으며 [헤더·검증 포함 측정 명령](BENCHMARKS.md#적용-codec의-헤더검증-포함-비교)으로 생성한다. Linux·원격 CI·운영 부하·실제 socket 비용은 별도 검증 대상이다.

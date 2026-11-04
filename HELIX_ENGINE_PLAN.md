@@ -6,6 +6,7 @@
 
 이 절은 아래 v2 계획의 언어/전송 우선순위보다 우선한다. 기존 단계 기록은 당시 구현의 이력으로 유지한다.
 
+- **제품 범위**: Helix는 연결·세션·프레이밍·송수신을 제공하는 범용 네트워크 서버 엔진이다. 앱이 메시지 형식과 업무 로직을 결정한다. MMO·게임 엔진·특정 콘텐츠 스레딩 모델을 기본 전제로 삼지 않는다. `Helix.Mmo`와 병렬 월드는 엔진 위에서 선택해 사용하는 콘텐츠 모듈·실험이다. README는 핵심 역할과 기본 실행을 안내하고 상세 실험·측정은 개별 문서로 분리한다.
 - **C++과 C# 독립 엔진**: `cpp/CMakeLists.txt`와 `csharp/Helix.sln`을 각각 빌드한다. C#은 순수 .NET TCP 엔진으로 실행하며 P/Invoke/네이티브 DLL에 의존하지 않는다. C++ C ABI는 호환용 선택 빌드(`HELIX_BUILD_CAPI=ON`)로 유지한다.
 - **MMO 모듈은 네트워크와 분리**: 양쪽 `Helix.Mmo`는 인스턴스별 `IMovementPolicy`/`ICombatRules`/`IVisibilityPolicy`를 주입받는다. 클래스와 델리게이트 어댑터가 같은 계약을 구현한다.
 - **상태 변경의 실행 계약**: 기존 C++/C# `WorldInstance`는 단일 tick writer다. C++ 선택 `ParallelWorldInstance`는 한 tick의 작업 그래프 안에서 서로 다른 엔티티 슬롯을 여러 worker가 동시에 갱신한다. tick 조정은 중첩 실행을 거부하며 입력·정책은 시작 경계에서 포착하고 완료 상태만 불변 게시한다. [단계별 전투 의미와 검증](docs/PARALLEL_MMO.md)을 따른다. C#에 같은 구조를 함께 구현하는 범위가 아니다.

@@ -1,23 +1,6 @@
 # 설정 레퍼런스
 
-> 갱신: 2026-11-04. 현재 범위는 [MMO.md](MMO.md)와 [README](../README.md)를 따른다. C#에는 platform backend 설정이 적용되지 않으며 KCP/cluster와 C++ 병렬 실행 설정은 미지원이다.
-
-## MMO 실행 한도
-
-`[mmo]`의 `max_entities=10000`, `max_pending_commands=4096`, `max_commands_per_tick=1024`, `tick_ms=50`을 사용한다. 각각 `HELIX_MMO__MAX_ENTITIES`, `HELIX_MMO__MAX_PENDING_COMMANDS`, `HELIX_MMO__MAX_COMMANDS_PER_TICK`, `HELIX_MMO__TICK_MS`로 덮어쓴다. 모두 양수이며 잘못된 MMO 정수값은 로드 오류다. C++ `EngineConfig`와 C# `EngineConfig`는 동일 키를 사용하고 WorldLimits는 앱에서 이 값으로 구성한다.
-
-C++ 전용 선택 병렬 실험은 다음 키를 추가한다. 동일한 `HELIX_MMO__*` 규칙으로 덮어쓴다.
-
-| 키 | 기본값 | 의미·검증 |
-|---|---:|---|
-| `execution` | `"sequential"` | `sequential` 또는 `parallel`. C++ 월드 샘플의 조립에서 소비 |
-| `worker_threads` | `4` | 프로세스에서 공유하는 콘텐츠 worker 수, 양수. I/O worker와 별도 |
-| `batch_size` | `128` | 엔티티 배치 크기, 양수 |
-| `cell_size` | `16.0` | XZ 셀 크기, 유한 양수 |
-| `visibility_radius` | `50.0` | XYZ 거리 AOI 반경, 유한 0 이상 |
-| `max_hits_per_tick` | `65536` | 단일·광역 피격 이벤트 계획 예산, 양수 |
-
-잘못된 값은 C++ 설정 로드 오류다. `parallel`은 `HELIX_BUILD_PARALLEL_MMO=ON` 빌드를 요구하며 pool 구성은 기동 후 hot reload하지 않는다. 기본 C++ `WorldInstance`와 C# 실행 모드를 변경하는 값이 아니다. [단계별 의미와 소비 지점](PARALLEL_MMO.md)을 참고한다.
+> 갱신: 2026-11-04. 범용 엔진의 연결·버퍼·프레이밍·로그 설정과 선택 모듈의 설정을 설명한다. 현재 지원 범위는 [README](../README.md)를 따른다. C#에는 platform backend 설정이 적용되지 않으며 KCP/cluster와 C++ 병렬 실행 설정은 미지원이다.
 
 Helix는 **코드 밖 설정**을 원칙으로 한다. 레이어링(12-factor):
 
@@ -122,6 +105,23 @@ TCP/KCP 모두 **길이 프리픽스 프레이밍**으로 메시지 경계를 �
   노드1: HELIX_CLUSTER__ENABLED=true HELIX_CLUSTER__NODE_ID=1 HELIX_NETWORK__PORT=5001
   ```
 - 크로스노드 전달은 `Server::RouteToSession(sid, msg)`, 데이터 버전 브로드캐스트는 `Server::PublishDataVersion(...)`, 공유 KV는 `Server::ClusterKvSet/Get`. 자세한 건 [API.md](API.md).
+
+## 선택 콘텐츠: `[mmo]` 실행 한도
+
+`[mmo]`의 `max_entities=10000`, `max_pending_commands=4096`, `max_commands_per_tick=1024`, `tick_ms=50`을 사용한다. 각각 `HELIX_MMO__MAX_ENTITIES`, `HELIX_MMO__MAX_PENDING_COMMANDS`, `HELIX_MMO__MAX_COMMANDS_PER_TICK`, `HELIX_MMO__TICK_MS`로 덮어쓴다. 모두 양수이며 잘못된 MMO 정수값은 로드 오류다. C++ `EngineConfig`와 C# `EngineConfig`는 동일 키를 사용하고 WorldLimits는 앱에서 이 값으로 구성한다.
+
+C++ 전용 선택 병렬 실험은 다음 키를 추가한다. 동일한 `HELIX_MMO__*` 규칙으로 덮어쓴다.
+
+| 키 | 기본값 | 의미·검증 |
+|---|---:|---|
+| `execution` | `"sequential"` | `sequential` 또는 `parallel`. C++ 월드 샘플의 조립에서 소비 |
+| `worker_threads` | `4` | 프로세스에서 공유하는 콘텐츠 worker 수, 양수. I/O worker와 별도 |
+| `batch_size` | `128` | 엔티티 배치 크기, 양수 |
+| `cell_size` | `16.0` | XZ 셀 크기, 유한 양수 |
+| `visibility_radius` | `50.0` | XYZ 거리 AOI 반경, 유한 0 이상 |
+| `max_hits_per_tick` | `65536` | 단일·광역 피격 이벤트 계획 예산, 양수 |
+
+잘못된 값은 C++ 설정 로드 오류다. `parallel`은 `HELIX_BUILD_PARALLEL_MMO=ON` 빌드를 요구하며 pool 구성은 기동 후 hot reload하지 않는다. 기본 C++ `WorldInstance`와 C# 실행 모드를 변경하는 값이 아니다. [단계별 의미와 소비 지점](PARALLEL_MMO.md)을 참고한다.
 
 ## `[quic]` — 예정
 

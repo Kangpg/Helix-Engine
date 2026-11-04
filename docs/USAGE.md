@@ -2,7 +2,7 @@
 
 > 갱신: 2026-11-04. 모든 명령은 저장소 루트 기준이다. C++과 순수 C#은 독립 엔진이다.
 
-[빌드·검증](BUILD.md) → [설정](CONFIGURATION.md) → [API](API.md) 순서로 확인한다. MMO 콘텐츠 조립은 [MMO.md](MMO.md), C++ 병렬 실험은 [PARALLEL_MMO.md](PARALLEL_MMO.md)에 있다.
+[빌드·검증](BUILD.md) → [설정](CONFIGURATION.md) → [API](API.md) 순서로 기본 서버를 작성한다. 앱이 받은 메시지의 형식과 처리 로직을 정의하며, 별도 콘텐츠 모듈을 사용할 수도 있다.
 
 ## C++ 서버 작성과 실행
 
@@ -68,37 +68,6 @@ python tools/echo_bot.py churn --port 5000 --clients 500 --rounds 20
 
 결과 PASS와 종료코드 0을 함께 확인한다. C++/C# 출력이 모두 빌드된 환경의 공통 회귀 도구는 `python tools/verify_engines.py`다. 한 언어만 수정한 작업에서 이 도구 때문에 다른 엔진의 구현·빌드 범위를 확대하지 않는다.
 
-## MMO 콘텐츠와 병렬 월드 선택
-
-기본 `WorldInstance`는 이동·전투·가시성 정책을 주입받고 바운드 큐로 명령을 받아 tick에서 반영한다. 정책 교체는 다음 tick 시작 경계에서 적용하고 조회는 마지막 완료 상태를 읽는다.
-
-```powershell
-./build/windows-x64/Release/helix_world_server.exe config/helix.toml
-# 또는 별도 실행하는 C# MMO 샘플
-dotnet run --project csharp/samples/Helix.WorldServer -c Release -- config/helix.toml
-```
-
-MMO 봇은 기본 4바이트 big-endian 프레임과 Protobuf 설정을 사용한다.
-
-```powershell
-python -m pip install --target build/protobuf-python -r tools/requirements-protobuf.txt
-python tools/generate_protocol.py
-python tools/world_bot.py --port 5000
-```
-
-C++ 병렬 실험은 아래 구성으로 별도 선택한다.
-
-```powershell
-cmake --preset windows-x64 -DHELIX_BUILD_PARALLEL_MMO=ON
-cmake --build --preset windows-release --parallel 8
-$env:HELIX_MMO__EXECUTION="parallel"
-./build/windows-x64/Release/helix_world_server.exe config/helix.toml
-# 종료 후 기본 모드로 되돌리기
-Remove-Item Env:HELIX_MMO__EXECUTION
-```
-
-한 월드 내부에서 엔티티 배치별 이동·피격 판정·대상별 HP 반영을 병렬화한다. 기존 명령별 순차 처리와 단계별 게임 의미가 다르므로 같은 규칙의 순차 executor를 정확성·비용 비교 기준으로 사용한다. AOI 조회와 패킷 생성은 호출 스레드에서 실행한다. 현재 단순 규칙에서는 성능 개선이 확인되지 않았다. [측정 조건·실행기·정책 계약](PARALLEL_MMO.md)을 따른다.
-
 ## C++ KCP와 Redis
 
 기동 전 `HELIX_NETWORK__TRANSPORT=kcp`로 설정하면 같은 native 앱이 KCP를 사용한다. TCP 봇 대신 `helix_kcp_echo_client`를 사용한다.
@@ -133,9 +102,17 @@ target_link_libraries(myapp PRIVATE helix::helix)
 
 C++ `Snapshot<T>`는 완성된 `shared_ptr<const T>`를 `Store`로 게시하고 `Load`로 읽는다. 진행 중 reader는 이전 게시 객체를 유지하며, 게시 후에는 내용을 변경하지 않는다. `atomic<shared_ptr>`의 lock-free 동작이나 노드 전체의 동시 게시를 보장하지 않는다. Redis 데이터 버전 통지는 각 앱이 로드·검증·게시하는 트리거다.
 
+## 선택 콘텐츠 예제
+
+기본 echo 앱처럼 앱이 직접 메시지를 처리할 수 있고, 별도 콘텐츠 모듈을 조립할 수도 있다.
+
+- [MMO 콘텐츠](MMO.md): 이동·전투·가시성 규칙을 주입하는 상태 관리 예제다.
+- [예제 메시지](SERIALIZATION.md): 위 콘텐츠의 공통 schema와 직렬화 adapter다. Python 클라이언트 준비는 [빌드·검증](BUILD.md)을 따른다.
+- [C++ 병렬 월드](PARALLEL_MMO.md): 같은 전장의 콘텐츠 계산을 여러 worker로 실행하는 선택 실험이다. 정확성과 현재 성능 한계를 해당 문서에 기록한다.
+
 ## 성능 측정과 문제 확인
 
-네트워크·직렬화·도메인 tick은 서로 다른 측정이다. [README의 측정 절](../README.md)과 각 도구의 `--help`를 확인하고 빌드·다른 측정을 겹쳐 실행하지 않는다. C++/C# 언어 이름만으로 GC·p99·수용 인원 우열을 단정하지 않는다.
+네트워크·직렬화·도메인 tick은 서로 다른 측정이다. [성능 측정 가이드](BENCHMARKS.md)와 각 도구의 `--help`를 확인하고 빌드·다른 측정을 겹쳐 실행하지 않는다. C++/C# 언어 이름만으로 GC·p99·수용 인원 우열을 단정하지 않는다.
 
 - 설정 오류: 로그의 validation 사유와 터미널의 `HELIX_*` 덮어쓰기를 확인한다.
 - `parallel world requires HELIX_BUILD_PARALLEL_MMO=ON`: 선택 모듈을 켜서 빌드하거나 `execution=sequential`로 되돌린다.
