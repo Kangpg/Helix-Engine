@@ -1,0 +1,14 @@
+// Append fields/union members only; IDs and the HXMP identifier are wire contracts.
+namespace Helix.Protocol.FlatWire;
+table Position { x:double; y:double; z:double; }
+table Move { destination:Position; }
+table Attack { target_entity_id:ulong; }
+table Look {}
+table Welcome { entity_id:ulong; world_id:ulong; }
+enum ReplyStatus:ubyte { Unspecified = 0, Queued = 1, Busy = 2, Invalid = 3, Pending = 4 }
+table Reply { status:ReplyStatus; }
+table State { entity_id:ulong; position:Position; health:int; visible_entity_ids:[ulong]; tick:ulong; }
+union Body { Move, Attack, Look, Welcome, Reply, State }
+table Packet { protocol_version:uint; request_id:ulong; body:Body; }
+root_type Packet;
+file_identifier "HXMP";

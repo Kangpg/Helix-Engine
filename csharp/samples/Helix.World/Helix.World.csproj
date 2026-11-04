@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="../../Helix.Engine/Helix.Engine.csproj" />
+		<ProjectReference Include="../../Helix.Mmo/Helix.Mmo.csproj" />
+	</ItemGroup>
+</Project>

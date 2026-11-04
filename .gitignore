@@ -1,0 +1,106 @@
+# ── Build output ─────────────────────────────
+/build/
+/CMakeBuild/
+/out/
+/x64/
+**/x64/
+/Debug/
+/Release/
+/bin/
+
+# ── Dependencies (restored from vcpkg.json) ──
+/vcpkg_installed/
+
+# ── CMake generated ──────────────────────────
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# ── Visual Studio ────────────────────────────
+*.user
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+.vs/
+
+# ── Build/system artifacts ───────────────────
+*.log
+*.obj
+*.pch
+*.pdb
+*.idb
+*.ipch
+*.tlog
+*.lastbuildstate
+*.recipe
+*.db
+*.exe
+*.dll
+*.lib
+*.exp
+*.ilk
+*.cache
+*.tmp
+*.ncb
+*.pyc
+*.class
+
+# ── Editor ───────────────────────────────────
+.vscode/
+
+# ── OS ───────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── git backup (created during repo reset) ───
+.git_backup_*/
+
+# ── .NET build output (C# SDK) ───────────────
+csharp/**/obj/
+csharp/**/bin/
+[Bb]in/
+[Oo]bj/
+
+# ── Machine-specific tool settings ───────────
+sourcetreeconfig.json
+
+# ── Local AI assistant configuration ─────────
+.agents/
+.claude/
+.codex/
+.cursor/
+.gemini/
+AGENTS.md
+AGENTS.override.md
+CLAUDE.md
+GEMINI.md
+.cursorrules
+.cursorignore
+.aider*
+/.github/agents/
+/.github/instructions/
+/.github/copilot-instructions.md
+/docs/*.agent.md
+
+# ── Generated output dir ─────────────────────
+/Generated/
+
+# Internal analysis of a separate commercial codebase (keep local)
+/docs/REPORT-ares-vs-helix.md
+
+# Local tooling, credentials and generated dashboard state
+/.cache/
+/.aws/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+/tools/gui/presets.json
+/BenchmarkDotNet.Artifacts/
+
+# ── Benchmark run output ─────────────────────
+/benchmark_report.*

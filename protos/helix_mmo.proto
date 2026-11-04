@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package helix.wire;
+option csharp_namespace = "Helix.Protocol.Wire";
+
+// 번호는 재사용하지 않는다. 이 schema는 전송/엔진 수명과 독립이다.
+message Position { double x = 1; double y = 2; double z = 3; }
+message MoveCommand { Position destination = 1; }
+message AttackCommand { uint64 target_entity_id = 1; }
+message LookCommand {}
+
+message ClientPacket {
+  uint32 protocol_version = 1;
+  uint64 request_id = 2;
+  oneof body {
+    MoveCommand move = 10;
+    AttackCommand attack = 11;
+    LookCommand look = 12;
+  }
+}
+
+enum ReplyStatus {
+  REPLY_STATUS_UNSPECIFIED = 0;
+  REPLY_STATUS_QUEUED = 1; // 명령 큐 접수이며 실제 적용 완료가 아니다.
+  REPLY_STATUS_BUSY = 2;
+  REPLY_STATUS_INVALID = 3;
+  REPLY_STATUS_PENDING = 4;
+}
+message Welcome { uint64 entity_id = 1; uint64 world_id = 2; }
+message CommandReply { ReplyStatus status = 1; }
+message WorldState {
+  uint64 entity_id = 1;
+  Position position = 2;
+  int32 health = 3;
+  repeated uint64 visible_entity_ids = 4;
+  uint64 tick = 5;
+}
+message ServerPacket {
+  uint32 protocol_version = 1;
+  uint64 request_id = 2;
+  oneof body {
+    Welcome welcome = 10;
+    CommandReply reply = 11;
+    WorldState state = 12;
+  }
+}

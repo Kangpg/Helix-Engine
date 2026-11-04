@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<PackageId>Helix.Protocol</PackageId>
+		<Description>Format-independent Helix MMO messages, serializer registry and default Protobuf adapter.</Description>
+		<Version>0.4.0</Version>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Google.Protobuf" Version="3.36.2" />
+		<PackageReference Include="Grpc.Tools" Version="2.84.0" PrivateAssets="all" />
+		<Protobuf Include="../../protos/helix_mmo.proto" ProtoRoot="../../protos" GrpcServices="None" />
+		<None Include="../../README.md" Pack="true" PackagePath="/README.md" />
+		<None Include="../../protos/helix_mmo.proto" Pack="true" PackagePath="content/helix_mmo.proto" />
+	</ItemGroup>
+</Project>

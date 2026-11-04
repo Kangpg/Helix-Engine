@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup><OutputType>Exe</OutputType><IsPackable>false</IsPackable></PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="../../Helix.Protocol.FlatBuffers/Helix.Protocol.FlatBuffers.csproj" />
+		<ProjectReference Include="../../Helix.Protocol.MemoryPack/Helix.Protocol.MemoryPack.csproj" />
+		<PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+	</ItemGroup>
+</Project>

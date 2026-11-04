@@ -1,0 +1,46 @@
+# syntax=docker/dockerfile:1
+# =============================================================================
+# helix-engine — Linux 컨테이너 (멀티스테이지 · 비루트 · stdout 로그 · SIGTERM 드레이닝)
+#
+#   빌드:  docker build -f Dockerfile.linux -t helix-engine:latest .
+#   실행:  docker run --rm -p 5000:5000 helix-engine:latest
+#   포트 오버라이드(설정은 전부 env로 주입 가능 — 12-factor):
+#          docker run --rm -p 6000:6000 -e HELIX_NETWORK__PORT=6000 helix-engine:latest
+#   종료:  docker stop <id>   # SIGTERM → 엔진 graceful drain(진행 세션 정리 후 종료)
+#
+# 빌드/런타임 모두 debian:bookworm 계열로 맞춰 glibc 호환을 보장한다(GCC 12 =
+# std::atomic<std::shared_ptr> 지원 → Snapshot 핫스왑 샘플도 빌드됨).
+# =============================================================================
+
+# ---- 빌드 스테이지 ----------------------------------------------------------
+FROM debian:bookworm AS build
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential cmake ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+COPY . .
+
+# 정본 빌드(CMake). Linux 에선 epoll 백엔드 + pthread 로 자동 구성된다.
+RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DHELIX_BUILD_PROTOCOL=OFF \
+    && cmake --build build -j"$(nproc)" --target helix_echo_phase1
+
+# ---- 런타임 스테이지 --------------------------------------------------------
+FROM debian:bookworm-slim AS runtime
+
+# tini = PID 1 init: 시그널 전달 + 좀비 reaping. 비루트 계정 생성.
+RUN apt-get update && apt-get install -y --no-install-recommends tini \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --system --uid 10001 helix
+
+WORKDIR /app
+COPY --from=build /src/build/helix_echo_phase1 /app/helix_echo
+COPY --from=build /src/config /app/config
+
+EXPOSE 5000
+USER 10001
+
+# tini 가 SIGTERM 을 앱으로 전달 → 앱이 Server::Stop() 으로 드레이닝.
+# 구조화 로그는 stdout 으로 나가 도커/쿠버네티스 로그 수집기가 그대로 흡수한다.
+ENTRYPOINT ["/usr/bin/tini", "--", "/app/helix_echo"]

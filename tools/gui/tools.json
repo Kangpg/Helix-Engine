@@ -1,0 +1,66 @@
+{
+  "_comment": "Helix 테스트 대시보드 도구 레지스트리. 이 파일만 고치면 UI에 도구/파라미터가 자동 반영됩니다(서버 재시작 불필요, UI에서 새로고침). script 경로는 저장소 루트 기준. param.type: text|int|float|bool|select. param.arg 규칙: positional=true면 값만, flag 지정 시 '--flag value', bool은 store_true(참일 때만 flag 추가). nargs=true면 공백으로 분리된 여러 값. modes=[...]가 있으면 mode 셀렉트 값이 일치할 때만 폼에 표시.",
+  "tools": [
+    {
+      "id": "echo",
+      "name": "Echo/Load — 에코·지속 부하",
+      "desc": "echo: N개 동시 연결×M메시지 에코 대조(스모크). churn: 세션 수명 스트레스. load: --duration 동안 지속 부하(오류 시 재접속), 초당 실시간 통계로 라이브 차트 표시. workers로 프로세스 분산(GIL 우회).",
+      "script": "tools/echo_bot.py",
+      "params": [
+        { "name": "mode", "type": "select", "options": ["echo", "churn", "load"], "default": "echo", "positional": true, "help": "echo=처리량, churn=세션 스트레스, load=지속 부하" },
+        { "name": "host", "type": "text", "default": "127.0.0.1", "flag": "--host", "help": "타깃 서버(원격 가능)" },
+        { "name": "port", "type": "int", "default": 5000, "flag": "--port" },
+        { "name": "clients", "type": "int", "default": 100, "flag": "--clients", "help": "동시 연결 수(워커 합산)" },
+        { "name": "messages", "type": "int", "default": 50, "flag": "--messages", "help": "연결당 메시지 수", "modes": ["echo"] },
+        { "name": "rounds", "type": "int", "default": 20, "flag": "--rounds", "help": "connect/disconnect 반복", "modes": ["churn"] },
+        { "name": "duration", "type": "float", "default": 30, "flag": "--duration", "help": "지속 시간(초)", "modes": ["load"] },
+        { "name": "rate", "type": "float", "default": 0, "flag": "--rate", "help": "총 목표 msg/s(0=무제한)", "modes": ["load"] },
+        { "name": "workers", "type": "int", "default": 1, "flag": "--workers", "help": "봇 프로세스 수(부하 분산)" },
+        { "name": "stats_interval", "type": "float", "default": 1.0, "flag": "--stats-interval", "help": "실시간 통계 주기(초)", "modes": ["load"] },
+        { "name": "size", "type": "int", "default": 256, "flag": "--size", "help": "페이로드 바이트(0=랜덤 1~1024)" },
+        { "name": "timeout", "type": "float", "default": 5.0, "flag": "--timeout", "help": "I/O 타임아웃(초)" },
+        { "name": "raw", "type": "bool", "default": false, "flag": "--raw", "help": "프레이밍 없이 raw(Phase 1 서버)" },
+        { "name": "header_size", "type": "select", "options": ["4", "2"], "default": "4", "flag": "--header-size", "help": "길이 헤더 바이트" },
+        { "name": "little", "type": "bool", "default": false, "flag": "--little", "help": "리틀엔디안 헤더(기본 big)" }
+      ],
+
+      "quick": [
+        { "name": "라이트", "desc": "100c · 30s", "values": { "mode": "load", "clients": 100, "duration": 30, "workers": 1, "size": 256 } },
+        { "name": "미디엄", "desc": "500c · 60s · 2w", "values": { "mode": "load", "clients": 500, "duration": 60, "workers": 2, "size": 256 } },
+        { "name": "헤비", "desc": "1000c · 120s · 4w", "values": { "mode": "load", "clients": 1000, "duration": 120, "workers": 4, "size": 512 } },
+        { "name": "익스트림", "desc": "2000c · 300s · 8w", "values": { "mode": "load", "clients": 2000, "duration": 300, "workers": 8, "size": 512 } }
+      ]
+    },
+    {
+      "id": "cluster",
+      "name": "Cluster Route — 크로스노드 라우팅",
+      "desc": "helix_route_phase6 노드 2개(+공용 Redis)를 띄운 상태에서 노드 간 라우팅 검증.",
+      "script": "tools/cluster_route_bot.py",
+      "params": [
+        { "name": "host", "type": "text", "default": "127.0.0.1", "flag": "--host" },
+        { "name": "ports", "type": "text", "default": "5000 5001", "flag": "--ports", "nargs": true, "help": "노드 포트들(공백 구분)" },
+        { "name": "count", "type": "int", "default": 20, "flag": "--count", "help": "방향당 라우팅 메시지 수" },
+        { "name": "size", "type": "int", "default": 128, "flag": "--size", "help": "페이로드 바이트" },
+        { "name": "timeout", "type": "float", "default": 5.0, "flag": "--timeout" },
+        { "name": "header_size", "type": "select", "options": ["4", "2"], "default": "4", "flag": "--header-size" },
+        { "name": "little", "type": "bool", "default": false, "flag": "--little" }
+      ]
+    },
+    {
+      "id": "benchmark",
+      "name": "Benchmark — 매트릭스 스윕",
+      "desc": "에코 서버를 향해 (clients,messages,size) 매트릭스를 스윕하고 CSV/MD 리포트 생성. 서버를 먼저 띄워야 함.",
+      "script": "tools/benchmark.py",
+      "params": [
+        { "name": "host", "type": "text", "default": "127.0.0.1", "flag": "--host" },
+        { "name": "port", "type": "int", "default": 5000, "flag": "--port" },
+        { "name": "timeout", "type": "float", "default": 10.0, "flag": "--timeout" },
+        { "name": "out", "type": "text", "default": "benchmark_report", "flag": "--out", "help": "리포트 접두어(.csv/.md)" },
+        { "name": "label", "type": "text", "default": "run", "flag": "--label", "help": "리포트 라벨(예: tcp-release)" },
+        { "name": "header_size", "type": "select", "options": ["4", "2"], "default": "4", "flag": "--header-size" },
+        { "name": "little", "type": "bool", "default": false, "flag": "--little" },
+        { "name": "matrix", "type": "text", "default": "", "flag": "--matrix", "help": "커스텀 매트릭스 \"c,m,s; c,m,s\"" }
+      ]
+    }
+  ]
+}

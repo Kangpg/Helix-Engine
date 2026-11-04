@@ -1,0 +1,53 @@
+name: csharp-ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  managed-engine:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build independent managed engine and MMO projects
+        run: dotnet build csharp/Helix.sln -c Release -m:1
+      - name: Run MMO and managed TCP contract tests
+        run: dotnet csharp/tests/Helix.Tests/bin/Release/net10.0/Helix.Tests.dll
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build native engine and generated protocol
+        run: |
+          cmake -S . -B build/interop -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build/interop --config Debug --parallel 2
+          ctest --test-dir build/interop -C Debug --output-on-failure
+      - name: Verify shared FlatBuffers schema generation
+        shell: pwsh
+        run: |
+          $taskFlatc = if ($IsWindows) { './build/interop/Debug/flatc.exe' } else { './build/interop/flatc' }
+          ./tools/generate_serialization_schema.ps1 -Flatc $taskFlatc
+          git diff --exit-code -- csharp/Helix.Protocol.FlatBuffers/Generated
+      - name: Prepare generated Protobuf test client
+        run: python -m pip install --target build/protobuf-python -r tools/requirements-protobuf.txt
+      - name: Verify native and managed protocol on Windows
+        if: runner.os == 'Windows'
+        run: python tools/verify_engines.py --native-dir build/interop/Debug --protoc build/interop/_deps/helix_protoc-src/bin/protoc.exe --native-backend iocp_rio
+      - name: Verify native and managed protocol on Linux
+        if: runner.os == 'Linux'
+        run: python tools/verify_engines.py --native-dir build/interop --protoc build/interop/_deps/helix_protoc-src/bin/protoc
+      - name: Build independent serialization benchmark and check six codec round-trips
+        run: |
+          dotnet build csharp/benchmarks/Helix.SerializationBenchmarks/Helix.SerializationBenchmarks.csproj -c Release -m:1
+          dotnet csharp/benchmarks/Helix.SerializationBenchmarks/bin/Release/net10.0/Helix.SerializationBenchmarks.dll --quick --iterations 100 --samples 3
+      - name: Check production codec framed and validated benchmark cases
+        run: |
+          dotnet build csharp/benchmarks/Helix.WireBenchmarks/Helix.WireBenchmarks.csproj -c Release -m:1
+          dotnet csharp/benchmarks/Helix.WireBenchmarks/bin/Release/net10.0/Helix.WireBenchmarks.dll --smoke

@@ -1,0 +1,20 @@
+name: cpp-parallel-mmo
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+jobs:
+  parallel-world:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure independent C++ experiment without protocol dependencies
+        run: cmake -S cpp -B build/parallel -DCMAKE_BUILD_TYPE=Release -DHELIX_BUILD_PROTOCOL=OFF -DHELIX_BUILD_PARALLEL_MMO=ON
+      - name: Build
+        run: cmake --build build/parallel --config Release --parallel 2
+      - name: Test legacy and staged worlds
+        run: ctest --test-dir build/parallel -C Release --output-on-failure

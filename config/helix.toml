@@ -1,0 +1,59 @@
+# Helix 서버 엔진 설정 (Phase 3)
+# 모든 값은 환경변수로 오버라이드 가능: HELIX_<SECTION>__<KEY>
+#   예) HELIX_NETWORK__PORT=6000  HELIX_LOGGING__LEVEL=debug
+# 컨테이너 배포 시 이미지에는 기본값을 베이크하고, 배포별 값은 환경변수로 주입.
+
+[network]
+ip = "0.0.0.0"
+port = 5000
+transport = "tcp"         # tcp | kcp. quic은 예약 값이며 구현은 후순위.
+backend = "auto"          # auto | iocp | iocp_rio | epoll  (auto: Windows IOCP)
+max_connections = 10000
+backlog = 128
+io_threads = 0            # 0 = CPU 코어 수 자동
+concurrent_accepts = 16
+
+[rio]
+buffer_size = 16384          # 컨텍스트별 등록 버퍼. 큰 송신은 여러 chunk로 전송.
+completion_queue_size = 32768 # iocp_rio: max_connections * 2 이상
+
+[buffers]
+recv_buffer_size = 8192
+max_send_queue = 1024     # 세션당 송신 대기 한계(초과 시 백프레셔)
+
+[framing]
+header_size = 4           # 2 또는 4 (길이 프리픽스 바이트)
+big_endian = true
+max_message_size = 1048576  # 1 MiB (과대/손상 패킷 가드)
+
+[logging]
+level = "info"            # debug | info | warn | error
+sink = "stdout"           # stdout | file | both  (컨테이너는 stdout 권장)
+file = "helix.log"
+
+[mmo]
+max_entities = 10000
+max_pending_commands = 4096
+max_commands_per_tick = 1024
+tick_ms = 50
+execution = "sequential" # C++: parallel requires HELIX_BUILD_PARALLEL_MMO=ON; C# is independent.
+worker_threads = 4       # Shared C++ content worker pool, separate from io_threads.
+batch_size = 128
+cell_size = 16.0         # XZ grid cells; distance queries use all three axes.
+visibility_radius = 50.0
+max_hits_per_tick = 65536 # Bound planned single-target + area hits; whole-command rejection on overflow.
+
+[protocol]
+serializer = "protobuf" # protobuf | flatbuffers (C++/C#) | memorypack (C# only)
+
+[shutdown]
+drain_timeout_ms = 5000   # graceful 종료 시 진행 중 세션 정리 대기 한계(ms)
+
+[cluster]                  # scale-out (Phase 6). 기본 비활성 = 단일 노드
+enabled = false           # true 면 Redis 백플레인으로 노드 간 협업
+backend = "redis"         # redis (현재 유일)
+url = "redis://127.0.0.1:6379/0"
+node_id = 0               # 노드별 고유 (< 16777216). SessionId 상위 비트에 임베드
+session_ttl_sec = 30      # 세션 디렉터리 엔트리 TTL(좀비 정리)
+heartbeat_ms = 10000      # TTL 갱신 주기 (session_ttl_sec*1000 보다 작아야 함)
+# 다중 노드 예: 노드1 → HELIX_CLUSTER__ENABLED=true HELIX_CLUSTER__NODE_ID=1 HELIX_NETWORK__PORT=5001

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<PackageId>Helix.Protocol.MemoryPack</PackageId><Version>0.4.0</Version>
+		<Description>Optional C#-only MemoryPack packet serializer for Helix.</Description>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression><PackageReadmeFile>README.md</PackageReadmeFile>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="../Helix.Protocol/Helix.Protocol.csproj" />
+		<PackageReference Include="MemoryPack" Version="1.21.4" />
+		<None Include="../../README.md" Pack="true" PackagePath="/README.md" />
+	</ItemGroup>
+</Project>

@@ -1,0 +1,77 @@
+# Phase 4 — Linux CI: epoll 백엔드 + TCP 코어 경로 빌드·테스트.
+# Windows IOCP/RIO/QUIC 풀 빌드는 별도 워크플로(windows-ci)에서.
+name: linux-ci
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  epoll-tests:
+    name: epoll backend + TCP path (g++/clang)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cxx: [ g++, clang++ ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: sudo apt-get update && sudo apt-get install -y g++ clang
+
+      # Phase 4 검증 단위: EpollBackend 계약 테스트 + TCP echo end-to-end.
+      # (풀 서버 링크는 RespClient/KcpTransport 포팅 후 — PHASE4.md 후속 참조)
+      - name: Build & run EpollBackend contract test
+        run: |
+          ${{ matrix.cxx }} -std=c++20 -O2 -pthread -Wall -Wextra -I include -I src \
+            src/net/EpollBackend.cpp tests/epoll_backend_test.cpp -o epoll_test
+          ./epoll_test
+
+      - name: Build & run TCP echo end-to-end test
+        run: |
+          ${{ matrix.cxx }} -std=c++20 -O2 -pthread -Wall -I include -I src \
+            src/net/EpollBackend.cpp src/net/Acceptor.cpp \
+            src/session/Session.cpp src/session/SessionManager.cpp \
+            tests/echo_e2e_test.cpp -o echo_e2e
+          ./echo_e2e
+
+  cmake-build:
+    name: full engine build (CMake, Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain
+        run: sudo apt-get update && sudo apt-get install -y cmake g++
+      # Linux 정본 빌드: epoll 백엔드 + pthread 로 자동 구성. 엔진(static/shared) +
+      # 샘플(echo/chat/route)까지 빌드. (Windows IOCP/RIO 는 windows-ci 에서.)
+      - name: Configure & build
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j"$(nproc)"
+          ctest --test-dir build --output-on-failure
+      - name: Smoke-run echo server (boot + graceful SIGTERM)
+        run: |
+          cd build && ./helix_echo_phase1 &
+          SVPID=$!
+          sleep 2
+          kill -TERM $SVPID
+          wait $SVPID || true
+
+  docker:
+    name: docker image (linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -f Dockerfile.linux -t helix-engine:ci .
+
+  # 벤치마크는 서버 풀빌드가 Linux에 올라온 뒤 활성화(현재는 수동: tools/benchmark.py).
+  # benchmark:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - run: python3 tools/benchmark.py --matrix tcp --report bench.md
+  #     - uses: actions/upload-artifact@v4
+  #       with: { name: bench-report, path: bench.md }

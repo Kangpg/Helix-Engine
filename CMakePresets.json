@@ -1,0 +1,18 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "windows-x64",
+      "displayName": "Windows x64 (MSVC, VS2022)",
+      "description": "C++ 엔진·MMO·Protobuf. KCP는 vendored, Protobuf는 고정 버전을 자동 복원.",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build/windows-x64"
+    }
+  ],
+  "buildPresets": [
+    { "name": "windows-debug",   "configurePreset": "windows-x64", "configuration": "Debug" },
+    { "name": "windows-release", "configurePreset": "windows-x64", "configuration": "Release" }
+  ]
+}

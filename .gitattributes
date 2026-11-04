@@ -1,0 +1,38 @@
+# Normalize line endings: detect text automatically, store as LF in repo
+* text=auto
+
+# Source files -> always LF in repo (checked out as native on Windows)
+*.c     text eol=lf
+*.cpp   text eol=lf
+*.cc    text eol=lf
+*.h     text eol=lf
+*.hpp   text eol=lf
+*.cs    text eol=lf
+*.proto text eol=lf
+*.py    text eol=lf
+*.cmake text eol=lf
+*.md    text eol=lf
+*.toml  text eol=lf
+*.json  text eol=lf
+*.ini   text eol=lf
+*.txt   text eol=lf
+CMakeLists.txt text eol=lf
+
+# Windows-specific scripts -> keep CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.sln text eol=crlf
+*.vcxproj      text eol=crlf
+*.vcxproj.filters text eol=crlf
+
+# Binary files -> never touch
+*.png  binary
+*.jpg  binary
+*.gif  binary
+*.ico  binary
+*.lib  binary
+*.dll  binary
+*.exe  binary
+*.pdb  binary
+*.zip  binary

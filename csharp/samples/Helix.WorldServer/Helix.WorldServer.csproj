@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup><OutputType>Exe</OutputType><ServerGarbageCollection>true</ServerGarbageCollection></PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="../../Helix.Engine/Helix.Engine.csproj" />
+		<ProjectReference Include="../../Helix.Mmo/Helix.Mmo.csproj" />
+		<ProjectReference Include="../../Helix.Protocol/Helix.Protocol.csproj" />
+		<ProjectReference Include="../../Helix.Protocol.FlatBuffers/Helix.Protocol.FlatBuffers.csproj" />
+		<ProjectReference Include="../../Helix.Protocol.MemoryPack/Helix.Protocol.MemoryPack.csproj" />
+	</ItemGroup>
+</Project>

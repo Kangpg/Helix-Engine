@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<PackageId>Helix.Protocol.FlatBuffers</PackageId><Version>0.4.0</Version>
+		<Description>Optional shared C++/C# FlatBuffers packet serializer for Helix.</Description>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression><PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="../Helix.Protocol/Helix.Protocol.csproj" />
+		<PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
+		<None Include="../../README.md" Pack="true" PackagePath="/README.md" />
+		<None Include="../../protos/helix_mmo.fbs" Pack="true" PackagePath="content/helix_mmo.fbs" />
+	</ItemGroup>
+</Project>

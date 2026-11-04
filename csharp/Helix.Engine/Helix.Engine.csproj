@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<PackageId>Helix.Engine</PackageId>
+		<Version>0.4.0</Version>
+		<Description>Independent managed Helix TCP server engine.</Description>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+	<ItemGroup><None Include="../../README.md" Pack="true" PackagePath="/README.md" /></ItemGroup>
+</Project>

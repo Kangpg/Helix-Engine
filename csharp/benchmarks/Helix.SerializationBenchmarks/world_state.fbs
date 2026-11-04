@@ -1,0 +1,12 @@
+namespace Helix.SerializationBenchmarks.Flat;
+table WorldState {
+  entity_id:ulong;
+  x:double;
+  y:double;
+  z:double;
+  health:int;
+  tick:ulong;
+  visible_entity_ids:[ulong];
+}
+root_type WorldState;
+file_identifier "HXBS";

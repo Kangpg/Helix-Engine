@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<PackageId>Helix.Mmo</PackageId>
+		<Version>0.4.0</Version>
+		<Description>Instance-local movement, combat and visibility contracts for Helix.</Description>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+	<ItemGroup><None Include="../../README.md" Pack="true" PackagePath="/README.md" /></ItemGroup>
+</Project>
